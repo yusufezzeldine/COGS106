@@ -2,7 +2,7 @@
 git status
 
 #Something that saves the current date and time in a file
-date > /data/class/cogs106/yezzeldi/version
+date > /data/class/cogs106/yezzeldi/COGS106/version
 
 #Update github with the new version file
 git add .
