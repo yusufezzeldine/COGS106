@@ -7,6 +7,8 @@ Original file is located at
     https://colab.research.google.com/drive/1tJiCr2quO2g-QS2LFFVaWYthL84t27MH
 """
 
+#Creating a non-smelly version of the Signal Detection Class
+
 from scipy.special import ndtri
 
 class SignalDetection:
@@ -33,7 +35,7 @@ class SignalDetection:
     # Calculates the Criterion value
     return (-0.5 * (ndtri(self.hit_rate()) + ndtri(self.false_alarm_rate())))
 
-## Test if we did it right
+## Testing if the class works correctly, and if the objects can be corrupted
 
 import unittest
 import numpy as np
@@ -65,6 +67,89 @@ class TestSignalDetection(unittest.TestCase):
         expected = -0.463918426665941
         obtained = sd.criterion()
         # Compare calculated and expected criterion
+        self.assertAlmostEqual(obtained, expected, places=6)
+    def test_object_corruption(self):
+        sd   = SignalDetection(15, 5, 15, 5)
+        expected = sd.d_prime()
+        sd.hits = 1824
+        sd.misses = 1248
+        sd.false_alarms = 1248
+        sd.correct_rejections = 2142
+        obtained = sd.d_prime()
+        # Compare original and corrupted d-prime
+        self.assertAlmostEqual(obtained, expected, places=6)
+
+if __name__ == '__main__':
+    unittest.main(argv=['ignored'], exit=False)
+
+#Fixing the Signal Detection Class to prevent objects from being corrupted
+
+class SignalDetection:
+  def __init__(self,hits,misses,false_alarms,correct_rejections):
+    # Define variables
+    self.__hits = hits
+    self.__misses = misses
+    self.__false_alarms = false_alarms
+    self.__correct_rejections = correct_rejections
+  
+  def hit_rate(self):
+    # Calculates the Hit Rate
+    return (self.__hits / (self.__hits + self.__misses))
+
+  def false_alarm_rate(self):
+    # Calculates the False Alarm Rate 
+    return (self.__false_alarms / (self.__false_alarms + self.__correct_rejections))
+  
+  def d_prime(self):
+    # Calculates the d-Prime value
+    return (ndtri(self.hit_rate()) - ndtri(self.false_alarm_rate()))
+  
+  def criterion(self):
+    # Calculates the Criterion value
+    return (-0.5 * (ndtri(self.hit_rate()) + ndtri(self.false_alarm_rate())))
+
+## Running the test again to see if the objects are non-corruptable now
+
+import unittest
+import numpy as np
+import matplotlib.pyplot as plt
+
+class TestSignalDetection(unittest.TestCase):
+    def test_d_prime_zero(self):
+        sd   = SignalDetection(15, 5, 15, 5)
+        expected = 0
+        obtained = sd.d_prime()
+        # Compare calculated and expected d-prime
+        self.assertAlmostEqual(obtained, expected, places=6)
+    def test_d_prime_nonzero(self):
+        sd   = SignalDetection(15, 10, 15, 5)
+        expected = -0.421142647060282
+        obtained = sd.d_prime()
+        # Compare calculated and expected d-prime
+        self.assertAlmostEqual(obtained, expected, places=6)
+    def test_criterion_zero(self):
+        sd   = SignalDetection(5, 5, 5, 5)
+        # Calculate expected criterion        
+        expected = 0
+        obtained = sd.criterion()
+        # Compare calculated and expected criterion
+        self.assertAlmostEqual(obtained, expected, places=6)
+    def test_criterion_nonzero(self):
+        sd   = SignalDetection(15, 10, 15, 5)
+        # Calculate expected criterion        
+        expected = -0.463918426665941
+        obtained = sd.criterion()
+        # Compare calculated and expected criterion
+        self.assertAlmostEqual(obtained, expected, places=6)
+    def test_object_corruption(self):
+        sd   = SignalDetection(15, 5, 15, 5)
+        expected = sd.d_prime()
+        sd.__hits = 1824
+        sd.__misses = 1248
+        sd.__false_alarms = 1248
+        sd.__correct_rejections = 2142
+        obtained = sd.d_prime()
+        # Compare original and corrupted d-prime
         self.assertAlmostEqual(obtained, expected, places=6)
 
 if __name__ == '__main__':
