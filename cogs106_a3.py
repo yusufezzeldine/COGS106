@@ -239,31 +239,55 @@ class TestSignalDetection(unittest.TestCase):
 if __name__ == '__main__':
     unittest.main(argv=['ignored'], exit=False)
 
-# Introduce method to plot ROC curve in SignalDetection class
+# Introduce a SignalDetection class that handles lists of value sets instead of just one set, and a method to plot an ROC curve
 
 class SignalDetection:
   def __init__(self,hits,misses,false_alarms,correct_rejections):
-    # Define variables
+    # Define the lists of variables
     self.__hits = hits
     self.__misses = misses
     self.__false_alarms = false_alarms
     self.__correct_rejections = correct_rejections
   
   def hit_rate(self):
-    # Calculates the Hit Rate
-    return (self.__hits / (self.__hits + self.__misses))
+    # Calculates the Hit Rates for all pairs of values
+    if len(self.__hits) == len(self.__misses):
+      self.__hit_rates = []
+      for i in range(0,len(self.__hits)):
+        self.__hit_rates.append((self.__hits[i] / (self.__hits[i] + self.__misses[i])))
+      return self.__hit_rates
+    else:
+      return "Mismathced array sizes for hits and misses"
 
   def false_alarm_rate(self):
-    # Calculates the False Alarm Rate 
-    return (self.__false_alarms / (self.__false_alarms + self.__correct_rejections))
+    # Calculates the False Alarm Rates for all pairs of values
+    if len(self.__false_alarms) == len(self.__correct_rejections):
+      self.__false_alarm_rates = []
+      for i in range(0,len(self.__false_alarms)):
+        self.__false_alarm_rates.append((self.__false_alarms[i] / (self.__false_alarms[i] + self.__correct_rejections[i])))
+      return self.__false_alarm_rates
+    else:
+      return "Mismathced array sizes for false alarms and correct rejections"
   
   def d_prime(self):
-    # Calculates the d-Prime value
-    return (ndtri(self.hit_rate()) - ndtri(self.false_alarm_rate()))
+    # Calculates the d-Prime values for all pairs of values
+    if len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
+      self.__d_primes = []
+      for i in range(0,len(self.__hits)):
+        self.__d_primes.append((ndtri(self.hit_rate()[i]) - ndtri(self.false_alarm_rate()[i])))
+      return self.__d_primes
+    else:
+      return "Mismathced array sizes for the provided lists of values"
   
   def criterion(self):
-    # Calculates the Criterion value
-    return (-0.5 * (ndtri(self.hit_rate()) + ndtri(self.false_alarm_rate())))
+    # Calculates the criterion values for all pairs of values
+    if len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
+      self.__criterions = []
+      for i in range(0,len(self.__hits)):
+        self.__criterions.append((-0.5 * (ndtri(self.hit_rate()[i]) + ndtri(self.false_alarm_rate()[i]))))
+      return self.__criterions
+    else:
+      return "Mismathced array sizes for the provided lists of values"
 
   def __add__(self, other):
     return SignalDetection(self.__hits + other.__hits, self.__misses + other.__misses, self.__false_alarms + other.__false_alarms, self.__correct_rejections + other.__correct_rejections)
@@ -272,10 +296,16 @@ class SignalDetection:
     return SignalDetection(self.__hits * scalar, self.__misses * scalar, self.__false_alarms * scalar, self.__correct_rejections * scalar)
   
   def plot_ROC(self):
-    plt.plot([0,self.false_alarm_rate(),1], [0,self.hit_rate(),1])
-    plt.xlabel("False Positive")
-    plt.ylabel("True Positive")
-    plt.show()
+    # Generates an ROC plot based on the list of provided values
+    self.__false_alarm_rates = [0] + self.false_alarm_rate() + [1]
+    self.__hit_rates = [0] + self.hit_rate() + [1]
+    if len(self.__false_alarm_rates) == len(self.__hit_rates):
+      plt.plot(self.__false_alarm_rates,self.__hit_rates)
+      plt.xlabel("False Positive")
+      plt.ylabel("True Positive")
+      plt.show()
+    else:
+      return "Mismathced array sizes for the provided lists of values"
 
-sd = SignalDetection(10,2,5,20)
+sd = SignalDetection([10,40,35],[4,9,3],[2,5,7],[9,17,11])
 sd.plot_ROC()
