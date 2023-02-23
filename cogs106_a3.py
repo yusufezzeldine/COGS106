@@ -251,43 +251,51 @@ class SignalDetection:
   
   def hit_rate(self):
     # Calculates the Hit Rates for all pairs of values
-    if len(self.__hits) == len(self.__misses):
+    if (type(self.__hits) is int) and (type(self.__misses) is int):
+      return (self.__hits / (self.__hits + self.__misses))
+    elif len(self.__hits) == len(self.__misses):
       self.__hit_rates = []
       for i in range(0,len(self.__hits)):
         self.__hit_rates.append((self.__hits[i] / (self.__hits[i] + self.__misses[i])))
       return self.__hit_rates
     else:
-      return "Mismathced array sizes for hits and misses"
+      return "Mismatched array sizes for hits and misses"
 
   def false_alarm_rate(self):
     # Calculates the False Alarm Rates for all pairs of values
-    if len(self.__false_alarms) == len(self.__correct_rejections):
+    if (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
+      return (self.__false_alarms / (self.__false_alarms + self.__correct_rejections))
+    elif len(self.__false_alarms) == len(self.__correct_rejections):
       self.__false_alarm_rates = []
       for i in range(0,len(self.__false_alarms)):
         self.__false_alarm_rates.append((self.__false_alarms[i] / (self.__false_alarms[i] + self.__correct_rejections[i])))
       return self.__false_alarm_rates
     else:
-      return "Mismathced array sizes for false alarms and correct rejections"
+      return "Mismatched array sizes for false alarms and correct rejections"
   
   def d_prime(self):
     # Calculates the d-Prime values for all pairs of values
-    if len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
+    if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
+      return (ndtri(self.hit_rate()) - ndtri(self.false_alarm_rate()))
+    elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
       self.__d_primes = []
       for i in range(0,len(self.__hits)):
         self.__d_primes.append((ndtri(self.hit_rate()[i]) - ndtri(self.false_alarm_rate()[i])))
       return self.__d_primes
     else:
-      return "Mismathced array sizes for the provided lists of values"
+      return "Mismatched array sizes for the provided lists of values"
   
   def criterion(self):
     # Calculates the criterion values for all pairs of values
-    if len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
+    if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
+      return (-0.5 * (ndtri(self.hit_rate()) + ndtri(self.false_alarm_rate())))
+    elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
       self.__criterions = []
       for i in range(0,len(self.__hits)):
         self.__criterions.append((-0.5 * (ndtri(self.hit_rate()[i]) + ndtri(self.false_alarm_rate()[i]))))
       return self.__criterions
     else:
-      return "Mismathced array sizes for the provided lists of values"
+      return "Mismatched array sizes for the provided lists of values"
 
   def __add__(self, other):
     return SignalDetection(self.__hits + other.__hits, self.__misses + other.__misses, self.__false_alarms + other.__false_alarms, self.__correct_rejections + other.__correct_rejections)
@@ -297,15 +305,112 @@ class SignalDetection:
   
   def plot_ROC(self):
     # Generates an ROC plot based on the list of provided values
-    self.__false_alarm_rates = [0] + self.false_alarm_rate() + [1]
-    self.__hit_rates = [0] + self.hit_rate() + [1]
-    if len(self.__false_alarm_rates) == len(self.__hit_rates):
+    if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
+      plt.plot([0,self.false_alarm_rate(),1],[0,self.hit_rate(),1])
+      plt.xlabel("False Positive")
+      plt.ylabel("True Positive")
+      plt.show()
+    elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
+      self.__false_alarm_rates = [0] + self.false_alarm_rate() + [1]
+      self.__hit_rates = [0] + self.hit_rate() + [1]
       plt.plot(self.__false_alarm_rates,self.__hit_rates)
       plt.xlabel("False Positive")
       plt.ylabel("True Positive")
       plt.show()
     else:
-      return "Mismathced array sizes for the provided lists of values"
+      return "Mismatched array sizes for the provided lists of values"
 
 sd = SignalDetection([10,40,35],[4,9,3],[2,5,7],[9,17,11])
 sd.plot_ROC()
+
+# Introduce a SignalDetection class that adds a method to create an SDT plot
+from scipy import stats
+
+class SignalDetection:
+  def __init__(self,hits,misses,false_alarms,correct_rejections):
+    # Define the lists of variables
+    self.__hits = hits
+    self.__misses = misses
+    self.__false_alarms = false_alarms
+    self.__correct_rejections = correct_rejections
+  
+  def hit_rate(self):
+    # Calculates the Hit Rates for all pairs of values
+    if (type(self.__hits) is int) and (type(self.__misses) is int):
+      return (self.__hits / (self.__hits + self.__misses))
+    elif len(self.__hits) == len(self.__misses):
+      self.__hit_rates = []
+      for i in range(0,len(self.__hits)):
+        self.__hit_rates.append((self.__hits[i] / (self.__hits[i] + self.__misses[i])))
+      return self.__hit_rates
+    else:
+      return "Mismatched array sizes for hits and misses"
+
+  def false_alarm_rate(self):
+    # Calculates the False Alarm Rates for all pairs of values
+    if (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
+      return (self.__false_alarms / (self.__false_alarms + self.__correct_rejections))
+    elif len(self.__false_alarms) == len(self.__correct_rejections):
+      self.__false_alarm_rates = []
+      for i in range(0,len(self.__false_alarms)):
+        self.__false_alarm_rates.append((self.__false_alarms[i] / (self.__false_alarms[i] + self.__correct_rejections[i])))
+      return self.__false_alarm_rates
+    else:
+      return "Mismatched array sizes for false alarms and correct rejections"
+  
+  def d_prime(self):
+    # Calculates the d-Prime values for all pairs of values
+    if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
+      return (ndtri(self.hit_rate()) - ndtri(self.false_alarm_rate()))
+    elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
+      self.__d_primes = []
+      for i in range(0,len(self.__hits)):
+        self.__d_primes.append((ndtri(self.hit_rate()[i]) - ndtri(self.false_alarm_rate()[i])))
+      return self.__d_primes
+    else:
+      return "Mismatched array sizes for the provided lists of values"
+  
+  def criterion(self):
+    # Calculates the criterion values for all pairs of values
+    if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
+      return (-0.5 * (ndtri(self.hit_rate()) + ndtri(self.false_alarm_rate())))
+    elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
+      self.__criterions = []
+      for i in range(0,len(self.__hits)):
+        self.__criterions.append((-0.5 * (ndtri(self.hit_rate()[i]) + ndtri(self.false_alarm_rate()[i]))))
+      return self.__criterions
+    else:
+      return "Mismatched array sizes for the provided lists of values"
+
+  def __add__(self, other):
+    return SignalDetection(self.__hits + other.__hits, self.__misses + other.__misses, self.__false_alarms + other.__false_alarms, self.__correct_rejections + other.__correct_rejections)
+
+  def __mul__(self, scalar):
+    return SignalDetection(self.__hits * scalar, self.__misses * scalar, self.__false_alarms * scalar, self.__correct_rejections * scalar)
+  
+  def plot_ROC(self):
+    # Generates an ROC plot based on the list of provided values
+    if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
+      plt.plot([0,self.false_alarm_rate(),1],[0,self.hit_rate(),1])
+      plt.xlabel("False Positive")
+      plt.ylabel("True Positive")
+      plt.show()
+    elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
+      self.__false_alarm_rates = [0] + self.false_alarm_rate() + [1]
+      self.__hit_rates = [0] + self.hit_rate() + [1]
+      plt.plot(self.__false_alarm_rates,self.__hit_rates)
+      plt.xlabel("False Positive")
+      plt.ylabel("True Positive")
+      plt.show()
+    else:
+      return "Mismatched array sizes for the provided lists of values"
+  def plot_SDT(self):
+    # Generates an SDT graph based on the provided values
+    x = np.linspace(-10,10,100)
+    plt.plot(x,stats.norm(0,1).pdf(x))
+    plt.plot(x,stats.norm(self.d_prime(),1).pdf(x))
+    plt.ylabel("Probability")
+    plt.show()
+
+sd = SignalDetection(10,4,2,9)
+sd.plot_SDT()
