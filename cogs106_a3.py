@@ -313,13 +313,17 @@ class SignalDetection:
     elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
       self.__false_alarm_rates = [0] + self.false_alarm_rate() + [1]
       self.__hit_rates = [0] + self.hit_rate() + [1]
-      plt.plot(self.__false_alarm_rates,self.__hit_rates)
+      plt.plot(self.__false_alarm_rates,self.__hit_rates, label="ROC Curve")
       plt.xlabel("False Positive")
       plt.ylabel("True Positive")
+      plt.title("ROC Plot")
+      plt.legend()
       plt.show()
     else:
       return "Mismatched array sizes for the provided lists of values"
 
+sd = SignalDetection(10,4,5,9)
+sd.plot_ROC()
 sd = SignalDetection([10,40,35],[4,9,3],[2,5,7],[9,17,11])
 sd.plot_ROC()
 
@@ -398,9 +402,11 @@ class SignalDetection:
     elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
       self.__false_alarm_rates = [0] + self.false_alarm_rate() + [1]
       self.__hit_rates = [0] + self.hit_rate() + [1]
-      plt.plot(self.__false_alarm_rates,self.__hit_rates)
+      plt.plot(self.__false_alarm_rates,self.__hit_rates, label="ROC Curve")
       plt.xlabel("False Positive")
       plt.ylabel("True Positive")
+      plt.title("ROC Plot")
+      plt.legend()
       plt.show()
     else:
       return "Mismatched array sizes for the provided lists of values"
@@ -417,14 +423,18 @@ class SignalDetection:
     elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
       for i in range(0,len(self.__hits)):
         x = np.linspace(-10,10,100)
-        plt.plot(x,stats.norm(0,1).pdf(x))
-        plt.plot(x,stats.norm(self.d_prime()[i],1).pdf(x))
-        plt.axvline(self.criterion()[i], color='r')
-        plt.axhline(y = max(stats.norm(0,1).pdf(x)), xmin = 0.5, xmax = 0.5+(self.d_prime()[i]/20), color = 'g')
+        plt.plot(x,stats.norm(0,1).pdf(x), label="noise")
+        plt.plot(x,stats.norm(self.d_prime()[i],1).pdf(x), label="signal")
+        plt.axvline(self.criterion()[i], color='r', label="criterion")
+        plt.axhline(y = max(stats.norm(0,1).pdf(x)), xmin = 0.5, xmax = 0.5+(self.d_prime()[i]/20), color = 'g', label="distance")
         plt.ylabel("Probability")
+        plt.title("SDT Plot")
+        plt.legend()
         plt.show()
     else:
       return "Mismatched array sizes for the provided lists of values"
 
+sd = SignalDetection(10,4,5,9)
+sd.plot_SDT()
 sd = SignalDetection([10,40,35],[4,9,3],[2,5,7],[9,17,11])
 sd.plot_SDT()
