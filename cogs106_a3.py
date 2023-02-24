@@ -306,9 +306,11 @@ class SignalDetection:
   def plot_ROC(self):
     # Generates an ROC plot based on the list of provided values
     if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
-      plt.plot([0,self.false_alarm_rate(),1],[0,self.hit_rate(),1])
+      plt.plot([0,self.false_alarm_rate(),1],[0,self.hit_rate(),1], label="ROC Curve")
       plt.xlabel("False Positive")
       plt.ylabel("True Positive")
+      plt.title("ROC Plot")
+      plt.legend()
       plt.show()
     elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
       self.__false_alarm_rates = [0] + self.false_alarm_rate() + [1]
@@ -395,9 +397,11 @@ class SignalDetection:
   def plot_ROC(self):
     # Generates an ROC plot based on the list of provided values
     if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
-      plt.plot([0,self.false_alarm_rate(),1],[0,self.hit_rate(),1])
+      plt.plot([0,self.false_alarm_rate(),1],[0,self.hit_rate(),1], label="ROC Curve")
       plt.xlabel("False Positive")
       plt.ylabel("True Positive")
+      plt.title("ROC Plot")
+      plt.legend()
       plt.show()
     elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
       self.__false_alarm_rates = [0] + self.false_alarm_rate() + [1]
@@ -414,11 +418,13 @@ class SignalDetection:
     # Generates SDT graphs based on the provided values
     if (type(self.__hits) is int) and (type(self.__misses) is int) and (type(self.__false_alarms) is int) and (type(self.__correct_rejections) is int):
       x = np.linspace(-10,10,100)
-      plt.plot(x,stats.norm(0,1).pdf(x))
-      plt.plot(x,stats.norm(self.d_prime(),1).pdf(x))
-      plt.axvline(self.criterion(), color='r')
-      plt.axhline(y = max(stats.norm(0,1).pdf(x)), xmin = 0.5, xmax = 0.5+(self.d_prime()/20), color = 'g')
+      plt.plot(x,stats.norm(0,1).pdf(x), label="noise")
+      plt.plot(x,stats.norm(self.d_prime(),1).pdf(x), label="signal")
+      plt.axvline(self.criterion(), color='r', label="criterion")
+      plt.axhline(y = max(stats.norm(0,1).pdf(x)), xmin = 0.5, xmax = 0.5+(self.d_prime()/20), color = 'g', label="distance")
       plt.ylabel("Probability")
+      plt.title("SDT Plot")
+      plt.legend()
       plt.show()
     elif len(self.__hits) == len(self.__misses) == len(self.__false_alarms) == len(self.__correct_rejections):
       for i in range(0,len(self.__hits)):
