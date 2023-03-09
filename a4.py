@@ -40,10 +40,14 @@ class SignalDetection:
     
     @staticmethod
     def simulate(dprime, criteriaList, signalCount, noiseCount):
-        sdtList = []
-        for i in range(len(criteriaList)):
-            sdtList.append(SignalDetection(dprime, criteriaList[i], signalCount, noiseCount))
-        return sdtList
+      sdtList = []
+      for i in range(len(criteriaList)):
+          k = criteriaList[i] + (dprime/2)
+          hits, falseAlarms = np.random.binomial(n=[signalCount, noiseCount], p=[1 - spi.stats.norm.cdf(k - dprime),1 - spi.stats.norm.cdf(k)])
+          misses, correctRejections = signalCount - hits, noiseCount - falseAlarms
+          sdtList.append(SignalDetection(hits, misses, falseAlarms, correctRejections))
+      
+      return sdtList
 
     @staticmethod
     def plot_roc(sdtList):
@@ -92,14 +96,13 @@ class SignalDetection:
     def fit_roc(sdtList):
         SignalDetection.plot_roc(sdtList)
         a = 0
-        minimize = spi.optimize.minimize(SignalDetection.rocLoss, a, method = 'nelder-mead', args = (sdtList))
+        minimize = spi.optimize.minimize(fun = SignalDetection.rocLoss, x0 = a, method = 'nelder-mead', args = (sdtList))
         losscurve = []
         for i in range(0,100,1):
           losscurve.append((SignalDetection.rocCurve(i/100, float(minimize.x))))
-        plt.plot(losscurve, np.linspace(0,1,100), '-', color='red')
-        print("aHat:",float(minimize.x),"\ndPrime: 8")
+        plt.plot(np.linspace(0,1,100), losscurve, '-', color='red')
         aHat = minimize.x
-        return aHat
+        return float(aHat)
 
     @staticmethod
     def rocLoss(a, sdtList):
@@ -110,7 +113,7 @@ class SignalDetection:
             L.append(s.nLogLikelihood(predicted_hit_rate, s.FA()))
         return sum(L)
 
-sdtList = [SignalDetection(8, 2, 1, 9), SignalDetection(8, 1, 2, 8), SignalDetection(8, 3, 1, 9), SignalDetection(8, 2, 2, 8),]
+sdtList = SignalDetection.simulate(1, [-1, 0, 1], 1e7, 1e7)
 SignalDetection.fit_roc(sdtList)
 plt.show()
 
