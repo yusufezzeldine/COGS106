@@ -7,46 +7,46 @@ Original file is located at
     https://colab.research.google.com/drive/1kD2qLy9A0VWxs8GShsm4HTX8YLADLRGE
 """
 
-import unittest
-import scipy.stats
 import numpy as np
-import random as rnd
-import math as m
 
 class Metropolis:
+    def __init__(self, logTarget, initialState):
+        self.logTarget = logTarget
+        self.state = initialState
+        self.__sd = 1
+        self.samples = []
 
-  def __init__(self,logTarget,initialState):
-    self.__logTarget = logTarget
-    self.__initialState = initialState
-    self.samples = []
+    def __accept(self, proposal):
+        acceptance_prob = min(1, np.exp(self.logTarget(proposal) / self.logTarget(self.state)))
+        if np.random.uniform() < acceptance_prob:
+            self.state = proposal
+            return True
+        return False
 
-  def __accept(self,proposal):
-    rand = rnd.uniform(0,1)
-    if proposal > rand:
-      return True
-    else:
-      return False
+    def adapt(self, blockLengths):
+        for k in blockLengths:
+            accepted = 0
+            for n in range(k):
+                proposal = np.random.normal(self.state, self.__sd)
+                if self.__accept(proposal):
+                    accepted += 1
+            self.__sd *= (0.4/(accepted / k))**1.1
+        return self
 
-  def adapt(self):
-    sd , rk = 1 , 0
-    while rk != 0.4:
-      sd_new = sd + 1
-      rk = 0.4/((sd_new/sd)**(1/1.1))
-      sd = sd_new
-    return sd_new
+    def sample(self, nSamples):
+        for n in range(nSamples):
+            proposal = np.random.normal(self.state, self.__sd)
+            self.__accept(proposal)
+            self.samples.append(self.state)
+        return self
 
-  def sample(self,n):
-    state = self.__initialState
-    for i in range(0,n):
-      proposal = np.random.normal(state,self.adapt())
-      pr = min(1,m.exp(proposal/state))
-      yesno = self.__accept(pr)
-      if yesno:
-        state = proposal
-      self.samples.append(state)
-
-  def summary(self):
-    return {"Mean" : sum(self.__samples)/len(self.__samples), "Interval" : scipy.stats.norm.interval(alpha=0.95, loc=np.mean(self.__samples), scale=scipy.stats.sem(self.__samples))}
+    def summary(self):
+        samples = np.array(self.samples)
+        return {
+            'mean': np.mean(samples),
+            'c025': np.percentile(samples, 2.5),
+            'c975': np.percentile(samples, 97.5),
+        }
 
 import scipy as spi
 import matplotlib.pyplot as plt
@@ -152,6 +152,10 @@ class SignalDetection:
             L.append(s.nLogLikelihood(predicted_hit_rate, s.FA()))
         return sum(L)
 
+import scipy.stats
+import numpy as np
+import matplotlib.pyplot as plt
+
 def fit_roc_bayesian(sdtList):
 
     # Define the log-likelihood function to optimize
@@ -160,10 +164,10 @@ def fit_roc_bayesian(sdtList):
 
     # Create a Metropolis sampler object and adapt it to the target distribution
     sampler = Metropolis(logTarget = loglik, initialState = 0)
-    # sampler = sampler.adapt(blockLengths = [2000]*3)
+    sampler = sampler.adapt(blockLengths = [2000]*3)
 
     # Sample from the target distribution
-    sampler = sampler.sample(n = 4000)
+    sampler = sampler.sample(nSamples = 4000)
 
     # Compute the summary statistics of the samples
     result  = sampler.summary()
