@@ -9,20 +9,20 @@ Original file is located at
 
 import numpy as np
 
-class Metropolis:
+class Metropolis: # Introducing Metropolis Class with the adapt, smaple, and summary methods, as well as a prival accept and construction method
     def __init__(self, logTarget, initialState):
         self.logTarget = logTarget
         self.state = initialState
-        self.__sd = 1
-        self.samples = []
-
+        self.__sd = 1 # Starting standard deviation (sd)
+        self.samples = [] # Initialize list to store sample states
+    
     def __accept(self, proposal):
         acceptance_prob = min(0, (self.logTarget(proposal) - self.logTarget(self.state)))
         if np.log(np.random.uniform()) < acceptance_prob:
             self.state = proposal
             return True
         return False
-
+    
     def adapt(self, blockLengths):
         for k in blockLengths:
             accepted = 0
@@ -30,7 +30,7 @@ class Metropolis:
                 proposal = np.random.normal(self.state, self.__sd)
                 if self.__accept(proposal):
                     accepted += 1
-            self.__sd *= (0.4/(accepted / k))**1.1
+            self.__sd *= ((accepted / k)/0.4)**1.1
         return self
 
     def sample(self, nSamples):
